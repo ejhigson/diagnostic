@@ -64,7 +64,7 @@ def main():
     # Settings
     # --------
     # Run settings
-    inds = list(range(1, 11))
+    inds = list(range(1, 6))
     parallel = True
     max_workers = 6
     compiled = False
@@ -76,7 +76,7 @@ def main():
         nlive_nrepeats_list.append((100, nr))
     for nl in nl_list:
         nlive_nrepeats_list.append((nl, 5))
-    nlive_nrepeats_list = [(100, 5)]
+    # nlive_nrepeats_list = [(100, 5)]
     # Likelihood and prior settings
     # -----------------------------
     ndim = 2

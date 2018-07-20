@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Utilites for loading data from generate_data.py."""
+import warnings
 import tqdm
 import pandas as pd
 import numpy as np
@@ -77,21 +78,23 @@ def get_results_df(likelihood_list, nlive_nrepeats_list, estimator_list,
                 save_name += '_td'
             if kwargs.get('bs_stat_dist', False):
                 save_name += '_bd'
-            if summary:
-                df_temp = nestcheck.diagnostics_tables.run_list_error_summary(
-                    run_list, estimator_list, estimator_names, n_simulate,
-                    save_name=save_name, true_values=true_values, **kwargs)
-            else:
-                df_temp = nestcheck.diagnostics_tables.run_list_error_values(
-                    run_list, estimator_list, estimator_names, n_simulate,
-                    save_name=save_name, **kwargs)
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', UserWarning)
+                if summary:
+                    df = nestcheck.diagnostics_tables.run_list_error_summary(
+                        run_list, estimator_list, estimator_names, n_simulate,
+                        save_name=save_name, true_values=true_values, **kwargs)
+                else:
+                    df = nestcheck.diagnostics_tables.run_list_error_values(
+                        run_list, estimator_list, estimator_names, n_simulate,
+                        save_name=save_name, **kwargs)
             new_inds = ['likelihood', 'nlive', 'nrepeats']
-            df_temp['likelihood'] = likelihood_name
-            df_temp['nlive'] = nlive
-            df_temp['nrepeats'] = nrepeats
-            order = new_inds + list(df_temp.index.names)
-            df_temp.set_index(new_inds, drop=True, append=True, inplace=True)
-            df_temp = df_temp.reorder_levels(order)
-            results_list.append(df_temp)
+            df['likelihood'] = likelihood_name
+            df['nlive'] = nlive
+            df['nrepeats'] = nrepeats
+            order = new_inds + list(df.index.names)
+            df.set_index(new_inds, drop=True, append=True, inplace=True)
+            df = df.reorder_levels(order)
+            results_list.append(df)
     results = pd.concat(results_list)
     return results
