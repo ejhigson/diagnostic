@@ -33,6 +33,26 @@ def getdist_plot(run_list, lims, width_inch=1):
     return gplot
 
 
+def ratio_bar_plot(errors_df, figsize=(3, 1)):
+    """Bar plot of implementation error fractions."""
+    ratio_plot = errors_df.xs('implementation std frac',
+                              level='calculation type')
+    ratio_plot = ratio_plot.reorder_levels([1, 0]).T
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(111)
+    ratio_plot['value'].plot.bar(yerr=ratio_plot['uncertainty'], ax=ax)
+    # Add line showing 1/sqrt(2)
+    ax.axhline(2 ** (-0.5), color='black',
+               linestyle='dashed', linewidth=1)
+    # ax = plt.gca()
+    ax.set_ylim([0, 1])
+    ax.set_ylabel('Imp St.Dev. / Values St.Dev.', labelpad=10)
+    ax.legend(bbox_to_anchor=(1.02, 1), title='Likelihood')
+    plt.xticks(rotation=0)
+    fig.subplots_adjust(left=0.11, right=0.7, bottom=0.14, top=0.97)
+    return fig
+
+
 def hist_plot(df_in, calculation, estimator, **kwargs):
     """Make a histogram plot of the dataframe values."""
     xlim = kwargs.get('xlim', None)
