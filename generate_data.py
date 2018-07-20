@@ -64,8 +64,7 @@ def main():
     # Settings
     # --------
     # Run settings
-    start_ind = 1
-    end_ind = 5
+    inds = list(range(1, 11))
     parallel = True
     max_workers = 6
     compiled = False
@@ -77,23 +76,13 @@ def main():
         nlive_nrepeats_list.append((100, nr))
     for nl in nl_list:
         nlive_nrepeats_list.append((nl, 5))
+    nlive_nrepeats_list = [(100, 5)]
     # Likelihood and prior settings
     # -----------------------------
     ndim = 2
     prior_scale = 10
-    likelihood = likelihoods.Gaussian()
-    prior = priors.Uniform(-prior_scale, prior_scale)
-    if not compiled:
-        run_func = dyPolyChord.pypolychord_utils.RunPyPolyChord(
-            likelihood, prior, ndim)
-    else:
-        assert type(prior).__name__.lower() == 'uniform', (
-            'Prior={} - you may need to change get_prior_block_str arguments'
-            .format(type(prior).__name__))
-        prior_str = dyPolyChord.polychord_utils.get_prior_block_str(
-            'uniform', [float(-prior_scale), float(prior_scale)], ndim)
-        run_func = dyPolyChord.polychord_utils.RunCompiledPolyChord(
-            './polychord_CC_ini', prior_str)
+    likelihood_list = [likelihoods.Gaussian(), likelihoods.GaussianShell(),
+                       likelihoods.Rastrigin(), likelihoods.Rosenbrock()]
     # PolyChord settings
     settings_dict = {
         'do_clustering': True,
@@ -113,36 +102,51 @@ def main():
         'max_ndead': -1,
         'cluster_posteriors': False,
         'boost_posterior': 0.0}
+    prior = priors.Uniform(-prior_scale, prior_scale)
     # Before running in parallel make sure base_dir exists, as if multiple
     # threads try to make one at the same time mkdir throws an error.
     if not os.path.exists(settings_dict['base_dir']):
         os.makedirs(settings_dict['base_dir'])
     if not os.path.exists(settings_dict['base_dir'] + '/clusters'):
         os.makedirs(settings_dict['base_dir'] + '/clusters')
-    for nlive, num_repeats in nlive_nrepeats_list:
-        # make list of settings dictionaries for the different repeats
-        file_root = dyPolyChord.output_processing.settings_root(
-            type(likelihood).__name__.lower(),
-            type(prior).__name__.lower(), ndim,
-            prior_scale=prior_scale, nrepeats=num_repeats,
-            nlive_const=nlive, dynamic_goal=None)
-        settings_dict['nlive'] = nlive
-        settings_dict['num_repeats'] = num_repeats
-        settings_list = []
-        for extra_root in range(start_ind + 1, end_ind + 1):
-            settings = copy.deepcopy(settings_dict)
-            settings['seed'] = extra_root * (10 ** 3)
-            settings['file_root'] = file_root + '_' + str(extra_root).zfill(3)
-            settings_list.append(settings)
-        # Do the nested sampling
-        # ----------------------
-        # For standard nested sampling just run PolyChord
-        desc = '{} nlive={} nrep={}'.format(
-            type(likelihood).__name__, nlive, num_repeats)
-        nestcheck.parallel_utils.parallel_apply(
-            run_func, settings_list,
-            max_workers=max_workers, parallel=parallel,
-            tqdm_kwargs={'desc': desc, 'leave': True})
+    for likelihood in likelihood_list:
+        if not compiled:
+            run_func = dyPolyChord.pypolychord_utils.RunPyPolyChord(
+                likelihood, prior, ndim)
+        else:
+            assert type(prior).__name__ == 'Uniform', (
+                'Prior={} - you may need to change get_prior_block_str '
+                'arguments'.format(type(prior).__name__))
+            assert len(likelihood_list) == 1
+            prior_str = dyPolyChord.polychord_utils.get_prior_block_str(
+                'uniform', [float(-prior_scale), float(prior_scale)], ndim)
+            run_func = dyPolyChord.polychord_utils.RunCompiledPolyChord(
+                './polychord_CC_ini', prior_str)
+        for nlive, num_repeats in nlive_nrepeats_list:
+            # make list of settings dictionaries for the different repeats
+            file_root = dyPolyChord.output_processing.settings_root(
+                type(likelihood).__name__,
+                type(prior).__name__, ndim,
+                prior_scale=prior_scale, nrepeats=num_repeats,
+                nlive_const=nlive, dynamic_goal=None)
+            settings_dict['nlive'] = nlive
+            settings_dict['num_repeats'] = num_repeats
+            settings_list = []
+            for extra_root in inds:
+                settings = copy.deepcopy(settings_dict)
+                settings['seed'] = extra_root
+                settings['file_root'] = file_root
+                settings['file_root'] += '_' + str(extra_root).zfill(3)
+                settings_list.append(settings)
+            # Do the nested sampling
+            # ----------------------
+            # For standard nested sampling just run PolyChord
+            desc = '{} nlive={} nrep={}'.format(
+                type(likelihood).__name__, nlive, num_repeats)
+            nestcheck.parallel_utils.parallel_apply(
+                run_func, settings_list,
+                max_workers=max_workers, parallel=parallel,
+                tqdm_kwargs={'desc': desc, 'leave': True})
 
 
 if __name__ == '__main__':
