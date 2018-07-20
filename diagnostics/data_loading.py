@@ -1,21 +1,45 @@
 #!/usr/bin/env python
-"""Utilites for running results."""
-# import functools
-# import copy
+"""Utilites for loading data from generate_data.py."""
 import tqdm
 import pandas as pd
 import numpy as np
-# import matplotlib
-# import matplotlib.pyplot as plt
-# import matplotlib.gridspec
-# import mpl_toolkits
 import nestcheck.ns_run_utils
 import nestcheck.plots
 import nestcheck.data_processing
-# import nestcheck.plots
 import nestcheck.diagnostics_tables
 import nestcheck.estimators as e
 import dyPolyChord.output_processing
+
+
+def get_file_root(likelihood_name, nlive, nrepeats, **kwargs):
+    """File root with default prior and ndim"""
+    prior_name = kwargs.pop('prior_name', 'Uniform')
+    prior_scale = kwargs.pop('prior_scale', 10)
+    ndim = kwargs.pop('ndim', 2)
+    return dyPolyChord.output_processing.settings_root(
+        likelihood_name.title().replace(' ', ''), prior_name, ndim,
+        prior_scale=prior_scale, nlive_const=nlive, nrepeats=nrepeats,
+        dynamic_goal=None)
+
+
+def get_run_list(likelihood_name, nrun, **kwargs):
+    """Helper function for loading lists of nested sampling runs."""
+    nlive = kwargs.pop('nlive', 100)
+    nrepeats = kwargs.pop('nrepeats', 5)
+    nrun_start = kwargs.pop('nrun_start', 1)
+    file_root = get_file_root(likelihood_name, nlive, nrepeats, **kwargs)
+    files = [file_root + '_' + str(i).zfill(3) for i in
+             range(nrun_start, nrun + nrun_start)]
+    return nestcheck.data_processing.batch_process_data(files, **kwargs)
+
+
+def get_run_list_dict(likelihood_list, nrun, **kwargs):
+    """Wrapper for getting dict with a run list for each likelihood."""
+    run_list_dict = {}
+    for likelihood_name in likelihood_list:
+        run_list_dict[likelihood_name] = get_run_list(
+            likelihood_name, nrun, **kwargs)
+    return run_list_dict
 
 
 def get_results_df(likelihood_list, nlive_nrepeats_list, estimator_list,
@@ -26,8 +50,7 @@ def get_results_df(likelihood_list, nlive_nrepeats_list, estimator_list,
         'estimator_names',
         [e.get_latex_name(est) for est in estimator_list])
     n_simulate = kwargs.pop('n_simulate', 5)
-    n_runs = kwargs.pop('n_runs', 100)
-    ndim = kwargs.pop('ndim', 2)
+    nrun = kwargs.pop('nrun', 100)
     summary = kwargs.pop('summary', True)
     true_values_dict = kwargs.pop('true_values_dict', None)
     results_list = []
@@ -45,12 +68,9 @@ def get_results_df(likelihood_list, nlive_nrepeats_list, estimator_list,
             true_values = None
         for nlive, nrepeats in tqdm.tqdm_notebook(
                 nlive_nrepeats_list, leave=False, desc='nlive_nrepeats'):
-            file_root = dyPolyChord.output_processing.settings_root(
-                likelihood_name, 'uniform', ndim, nlive_const=nlive,
-                nrepeats=nrepeats, dynamic_goal=None, prior_scale=10)
-            run_list = nestcheck.data_processing.batch_process_data(
-                [file_root + '_' + str(i) for i in range(1, n_runs + 1)],
-                func_kwargs={'errors_to_handle': ()})
+            run_list = get_run_list(likelihood_name, nrun, nlive=nlive,
+                                    nrepeats=nrepeats)
+            file_root = get_file_root(likelihood_name, nlive, nrepeats)
             save_name = 'cache/errors_df_{}_{}runs_{}sim'.format(
                 file_root, len(run_list), n_simulate)
             if kwargs.get('thread_pvalue', False):
