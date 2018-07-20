@@ -10,7 +10,7 @@ import nestcheck.ns_run_utils
 def getdist_plot(run_list, lims, width_inch=1):
     """Makes a trianlge plot of the nested sampling runs using getdist."""
     samples_list = []
-    labels = [r'$\theta_\hat{{i}}$' for i in
+    labels = [r'$\theta_\hat{{{}}}$'.format(i) for i in
               range(1, run_list[0]['theta'].shape[1] + 1)]
     for i, run in enumerate(run_list):
         logw = nestcheck.ns_run_utils.get_logw(run)
