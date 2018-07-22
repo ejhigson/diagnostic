@@ -15,12 +15,12 @@ import dyPolyChord.output_processing
 def get_file_root(likelihood_name, nlive, nrepeats, **kwargs):
     """File root with default prior and ndim"""
     prior_name = kwargs.pop('prior_name', 'Uniform')
-    prior_scale = kwargs.pop('prior_scale', 10)
+    prior_scale = kwargs.pop('prior_scale', 30)
     ndim = kwargs.pop('ndim', 2)
     return dyPolyChord.output_processing.settings_root(
-        likelihood_name.title().replace(' ', ''), prior_name, ndim,
-        prior_scale=prior_scale, nlive_const=nlive, nrepeats=nrepeats,
-        dynamic_goal=None)
+        likelihood_name.title().replace(' ', '').replace('gamma', 'Gamma'),
+        prior_name, ndim, prior_scale=prior_scale, nlive_const=nlive,
+        nrepeats=nrepeats, dynamic_goal=None)
 
 
 def get_run_list(likelihood_name, nrun, **kwargs):
