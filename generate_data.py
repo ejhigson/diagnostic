@@ -64,7 +64,7 @@ def main():
     # Settings
     # --------
     # Run settings
-    inds = list(range(1, 6))
+    inds = list(range(1, 11))
     parallel = True
     max_workers = 6
     compiled = False
@@ -76,13 +76,14 @@ def main():
         nlive_nrepeats_list.append((100, nr))
     for nl in nl_list:
         nlive_nrepeats_list.append((nl, 5))
-    # nlive_nrepeats_list = [(100, 5)]
+    nlive_nrepeats_list = [(100, 5)]
     # Likelihood and prior settings
     # -----------------------------
     ndim = 2
-    prior_scale = 10
+    prior_scale = 30
     likelihood_list = [likelihoods.Gaussian(), likelihoods.GaussianShell(),
                        likelihoods.Rastrigin(), likelihoods.Rosenbrock()]
+    likelihood_list = [likelihoods.LogGammaMix()]
     # PolyChord settings
     settings_dict = {
         'do_clustering': True,
