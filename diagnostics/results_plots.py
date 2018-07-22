@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Functions for making the plots in the paper."""
 import numpy as np
+# import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 import getdist
@@ -11,8 +12,11 @@ import nestcheck.estimators as e
 
 def getdist_plot(run_list, lims, width_inch=1):
     """Makes a trianlge plot of the nested sampling runs using getdist."""
+    # # Set usetex=False
+    # usetex_in = matplotlib.rcParams.get('text.usetex')
+    # matplotlib.rc('text', usetex=False)
     samples_list = []
-    labels = [r'$\theta_\hat{{{}}}$'.format(i) for i in
+    labels = [r'\theta_\hat{{{}}}'.format(i) for i in
               range(1, run_list[0]['theta'].shape[1] + 1)]
     for i, run in enumerate(run_list):
         logw = nestcheck.ns_run_utils.get_logw(run)
@@ -32,6 +36,8 @@ def getdist_plot(run_list, lims, width_inch=1):
         contour_colors=run_colors,
         diag1d_kwargs={'normalized': True},
         line_args=[{'color': col} for col in run_colors])
+    # # Reset usetex to original value
+    # matplotlib.rc('text', usetex=usetex_in)
     return gplot
 
 
