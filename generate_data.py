@@ -49,6 +49,7 @@ executable path accordingly).
 For more details see PolyChord's README.
 """
 import copy
+import itertools
 import os
 import nestcheck.parallel_utils
 import dyPolyChord.python_likelihoods as likelihoods
@@ -79,11 +80,14 @@ def main():
     nlive_nrepeats_list = [(100, 5)]
     # Likelihood and prior settings
     # -----------------------------
-    ndim = 2
+    ndim_list = [2, 4]
     prior_scale = 30
-    likelihood_list = [likelihoods.Gaussian(), likelihoods.GaussianShell(),
-                       likelihoods.Rastrigin(), likelihoods.Rosenbrock()]
-    likelihood_list = [likelihoods.LogGammaMix()]
+    likelihood_list = [likelihoods.Gaussian(sigma=1),
+                       likelihoods.GaussianShell(),
+                       likelihoods.Rastrigin(),
+                       likelihoods.Rosenbrock()]
+    likelihood_list = [likelihoods.LogGammaMix(),
+                       likelihoods.Gaussian(sigma=1)]
     # PolyChord settings
     settings_dict = {
         'do_clustering': True,
@@ -110,7 +114,7 @@ def main():
         os.makedirs(settings_dict['base_dir'])
     if not os.path.exists(settings_dict['base_dir'] + '/clusters'):
         os.makedirs(settings_dict['base_dir'] + '/clusters')
-    for likelihood in likelihood_list:
+    for likelihood, ndim in itertools.product(likelihood_list, ndim_list):
         if not compiled:
             run_func = dyPolyChord.pypolychord_utils.RunPyPolyChord(
                 likelihood, prior, ndim)
@@ -142,8 +146,8 @@ def main():
             # Do the nested sampling
             # ----------------------
             # For standard nested sampling just run PolyChord
-            desc = '{} nlive={} nrep={}'.format(
-                type(likelihood).__name__, nlive, num_repeats)
+            desc = '{} ndim={} nlive={} nrep={}'.format(
+                type(likelihood).__name__, ndim, nlive, num_repeats)
             nestcheck.parallel_utils.parallel_apply(
                 run_func, settings_list,
                 max_workers=max_workers, parallel=parallel,
