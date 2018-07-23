@@ -43,7 +43,7 @@ def get_run_list_dict(likelihood_list, nrun, **kwargs):
     return run_list_dict
 
 
-def get_results_df(likelihood_list, nlive_nrepeats_list, estimator_list,
+def get_results_df(likelihood_list, nd_nl_nr_list, estimator_list,
                    **kwargs):
     """Get a big pandas multiindex data frame with results for different
     likelihoods, nlives and nrepeats."""
@@ -52,7 +52,6 @@ def get_results_df(likelihood_list, nlive_nrepeats_list, estimator_list,
         [e.get_latex_name(est) for est in estimator_list])
     n_simulate = kwargs.pop('n_simulate', 5)
     nrun = kwargs.pop('nrun', 100)
-    ndim = kwargs.pop('ndim')
     summary = kwargs.pop('summary', True)
     true_values_dict = kwargs.pop('true_values_dict', None)
     results_list = []
@@ -68,8 +67,8 @@ def get_results_df(likelihood_list, nlive_nrepeats_list, estimator_list,
                     pass
         else:
             true_values = None
-        for nlive, nrepeats in tqdm.tqdm_notebook(
-                nlive_nrepeats_list, leave=False, desc='nlive_nrepeats'):
+        for ndim, nlive, nrepeats in tqdm.tqdm_notebook(
+                nd_nl_nr_list, leave=False, desc='ndim, nlive, nrepeats'):
             run_list = get_run_list(likelihood_name, nrun, nlive=nlive,
                                     nrepeats=nrepeats, ndim=ndim)
             file_root = get_file_root(likelihood_name, nlive, nrepeats,
@@ -90,8 +89,9 @@ def get_results_df(likelihood_list, nlive_nrepeats_list, estimator_list,
                     df = nestcheck.diagnostics_tables.run_list_error_values(
                         run_list, estimator_list, estimator_names, n_simulate,
                         save_name=save_name, **kwargs)
-            new_inds = ['likelihood', 'nlive', 'nrepeats']
+            new_inds = ['likelihood', 'ndim', 'nlive', 'nrepeats']
             df['likelihood'] = likelihood_name
+            df['ndim'] = nlive
             df['nlive'] = nlive
             df['nrepeats'] = nrepeats
             order = new_inds + list(df.index.names)

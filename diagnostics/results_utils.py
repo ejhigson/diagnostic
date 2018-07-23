@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Functions for making the plots in the paper."""
 import functools
+from more_itertools import unique_everseen
 import numpy as np
 import scipy.integrate
 import nestcheck.estimators as e
@@ -9,6 +10,22 @@ import dyPolyChord.python_likelihoods as likelihoods
 
 R_LABEL = r'$|\theta|$'
 LOGZ_LABEL = e.get_latex_name(e.logz)
+
+
+def get_nd_nl_nr_list(**kwargs):
+    """Get list of (dim, nlive, nrepeats) tuples."""
+    defaults = kwargs.pop('defaults', (10, 200, 10))
+    nd_list = kwargs.pop('nd_list', [2, 5, 10])
+    nl_list = kwargs.pop('nl_list', [10, 20, 50, 200, 500, 1000])
+    nr_list = kwargs.pop('nr_list', [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000])
+    nd_nl_nr_list = []
+    for nd in nd_list:
+        nd_nl_nr_list.append((nd, defaults[1], defaults[2]))
+    for nl in nl_list:
+        nd_nl_nr_list.append((defaults[0], nl, defaults[2]))
+    for nr in nr_list:
+        nd_nl_nr_list.append((defaults[0], defaults[1], nr))
+    return list(unique_everseen(nd_nl_nr_list))
 
 
 def component_value(theta, ind=0):
@@ -87,12 +104,12 @@ def get_true_values_dict(ndim=10, prior_scale=30,
     for like in likelihood_list:
         tv_dict[like] = {}
         if like == 'Gaussian':
-            tv_dict[like][LOGZ_LABEL] = ndim * np.log(2 * prior_scale)
+            tv_dict[like][LOGZ_LABEL] = ndim * -np.log(2 * prior_scale)
             for i in range(ndim):
                 tv_dict[like][e.get_latex_name(
                     e.param_mean, param_ind=i)] = 0
         elif like == 'LogGamma mix':
-            tv_dict[like][LOGZ_LABEL] = ndim * np.log(2 * prior_scale)
+            tv_dict[like][LOGZ_LABEL] = ndim * -np.log(2 * prior_scale)
             loggamma_mean = scipy.integrate.quad(
                 lambda x: x * np.exp(likelihoods.log_loggamma_pdf_1d(x)),
                 -prior_scale, prior_scale)[0]
