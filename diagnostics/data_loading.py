@@ -52,6 +52,7 @@ def get_results_df(likelihood_list, nlive_nrepeats_list, estimator_list,
         [e.get_latex_name(est) for est in estimator_list])
     n_simulate = kwargs.pop('n_simulate', 5)
     nrun = kwargs.pop('nrun', 100)
+    ndim = kwargs.pop('ndim')
     summary = kwargs.pop('summary', True)
     true_values_dict = kwargs.pop('true_values_dict', None)
     results_list = []
@@ -70,8 +71,9 @@ def get_results_df(likelihood_list, nlive_nrepeats_list, estimator_list,
         for nlive, nrepeats in tqdm.tqdm_notebook(
                 nlive_nrepeats_list, leave=False, desc='nlive_nrepeats'):
             run_list = get_run_list(likelihood_name, nrun, nlive=nlive,
-                                    nrepeats=nrepeats)
-            file_root = get_file_root(likelihood_name, nlive, nrepeats)
+                                    nrepeats=nrepeats, ndim=ndim)
+            file_root = get_file_root(likelihood_name, nlive, nrepeats,
+                                      ndim=ndim)
             save_name = 'cache/errors_df_{}_{}runs_{}sim'.format(
                 file_root, len(run_list), n_simulate)
             if kwargs.get('thread_pvalue', False):

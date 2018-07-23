@@ -65,7 +65,7 @@ def main():
     # Settings
     # --------
     # Run settings
-    inds = list(range(1, 11))
+    inds = list(range(1, 101))
     parallel = True
     max_workers = 6
     compiled = False
