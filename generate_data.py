@@ -80,7 +80,7 @@ def main():
     nlive_nrepeats_list = [(100, 5)]
     # Likelihood and prior settings
     # -----------------------------
-    ndim_list = [2, 4]
+    ndim_list = [10]
     prior_scale = 30
     likelihood_list = [likelihoods.Gaussian(sigma=1),
                        likelihoods.GaussianShell(),

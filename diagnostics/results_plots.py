@@ -1,43 +1,52 @@
 #!/usr/bin/env python
 """Functions for making the plots in the paper."""
 import numpy as np
-# import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 import getdist
 import getdist.plots
 import nestcheck.ns_run_utils
 import nestcheck.estimators as e
+import diagnostics.results_utils
 
 
-def getdist_plot(run_list, lims, width_inch=1):
-    """Makes a trianlge plot of the nested sampling runs using getdist."""
-    # # Set usetex=False
-    # usetex_in = matplotlib.rcParams.get('text.usetex')
-    # matplotlib.rc('text', usetex=False)
+def getdist_plot(run_list, **kwargs):
+    """
+    Makes a triangle plot of the nested sampling runs using getdist.
+
+    N.B. for getdist to work with matplotlib usetex=True we need curly
+    brackets around the subscript in e.g. \\theta_{\\hat{1}}"""
+    width_inch = kwargs.pop('width_inch', 1)
+    params = kwargs.pop('params', None)
+    param_limits = kwargs.pop('param_limits', {})
+    if kwargs:
+        raise TypeError('Unexpected **kwargs: {0}'.format(kwargs))
     samples_list = []
-    labels = [r'\theta_\hat{{{}}}'.format(i) for i in
-              range(1, run_list[0]['theta'].shape[1] + 1)]
+    labels = diagnostics.results_utils.param_list_given_dim(
+        run_list[0]['theta'].shape[1])
+    # Strip the $s as getdist adds these
+    labels = [lab.replace('$', '') for lab in labels]
+    if params is None:
+        params = labels
+    elif isinstance(params, int):
+        params = labels[:params]
     for i, run in enumerate(run_list):
         logw = nestcheck.ns_run_utils.get_logw(run)
         weights = np.exp(logw - logw.max())
         weights /= np.sum(weights)
         # remove zero weights as they can throw errors
         inds = np.nonzero(weights)
-        samples_list.append(getdist.MCSamples(samples=run['theta'][inds, :],
-                                              names=labels,
-                                              weights=weights[inds],
-                                              labels=labels,
-                                              label='Run ' + str(i + 1)))
+        samples_list.append(getdist.MCSamples(
+            samples=run['theta'][inds, :],
+            names=labels, weights=weights[inds], labels=labels,
+            label='Run ' + str(i + 1)))
     gplot = getdist.plots.getSubplotPlotter(width_inch=width_inch)
     run_colors = ['red', 'blue']
     gplot.triangle_plot(
-        samples_list, param_limits=lims,
+        samples_list, params=params, param_limits=param_limits,
         contour_colors=run_colors,
         diag1d_kwargs={'normalized': True},
         line_args=[{'color': col} for col in run_colors])
-    # # Reset usetex to original value
-    # matplotlib.rc('text', usetex=usetex_in)
     return gplot
 
 
