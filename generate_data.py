@@ -60,6 +60,10 @@ import dyPolyChord
 import diagnostics.results_utils
 import diagnostics.data_loading
 import diagnostics.settings
+try:
+    from mpi4py import MPI  # pylint: disable=unused-import
+except ImportError:
+    pass
 
 
 def main():
