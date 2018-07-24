@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 """Functions for load PolyChord data made with generate_data.py."""
 import warnings
-import tqdm
 import pandas as pd
 import nestcheck.ns_run_utils
 import nestcheck.plots
 import nestcheck.data_processing
+import nestcheck.parallel_utils
 import nestcheck.diagnostics_tables
 import nestcheck.estimators as e
 import dyPolyChord.output_processing
@@ -58,9 +58,10 @@ def get_results_df(likelihood_list, nd_nl_nr_list, **kwargs):
     summary = kwargs.pop('summary', True)
     results_list = []
     assert len(estimator_list) == len(estimator_names)
-    for likelihood_name in tqdm.tqdm_notebook(likelihood_list, leave=False,
-                                              desc='likelihoods'):
-        for ndim, nlive, nrepeats in tqdm.tqdm_notebook(
+    progress = nestcheck.parallel_utils.select_tqdm()
+    for likelihood_name in progress(likelihood_list, leave=False,
+                                    desc='likelihoods'):
+        for ndim, nlive, nrepeats in progress(
                 nd_nl_nr_list, leave=False, desc='ndim, nlive, nrepeats'):
             run_list = get_run_list(likelihood_name, nrun, nlive=nlive,
                                     nrepeats=nrepeats, ndim=ndim)
