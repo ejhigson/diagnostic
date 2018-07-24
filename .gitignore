@@ -12,6 +12,8 @@
 
 # Output
 chains
+slurm
+submitted_jobs
 
 # Github default python .gitignore
 # --------------------------------
