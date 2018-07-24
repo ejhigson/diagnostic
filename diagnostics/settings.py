@@ -79,9 +79,9 @@ def get_default_nd_nl_nr(as_dict=False):
 def get_nd_nl_nr_list(**kwargs):
     """Get list of (dim, nlive, nrepeats) tuples."""
     defaults = get_default_nd_nl_nr()
-    nd_list = kwargs.pop('nd_list', [2, 4, 10])
-    nl_list = kwargs.pop('nl_list', [10, 20, 50, 200, 500, 1000])
-    nr_list = kwargs.pop('nr_list', [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000])
+    nd_list = kwargs.pop('nd_list', [2, 4, 10, 20, 40])
+    nl_list = kwargs.pop('nl_list', [10, 20, 40, 100, 200, 400, 1000])
+    nr_list = kwargs.pop('nr_list', [1, 2, 4, 10, 20, 40, 100, 200, 400, 1000])
     nd_nl_nr_list = []
     for nd in nd_list:
         nd_nl_nr_list.append((nd, defaults[1], defaults[2]))

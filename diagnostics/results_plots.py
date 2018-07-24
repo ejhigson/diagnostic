@@ -110,19 +110,21 @@ def hist_plot(df_in, calculation, estimator, **kwargs):
                 xticks = ax.xaxis.get_major_ticks()
                 xticks[-1].label1.set_visible(False)
         ax.tick_params(axis='y', direction='inout')
-    fig.subplots_adjust(left=0.096, right=0.985, bottom=0.29, top=0.98)
     return fig
 
 
 def get_line_plot(df_temp, estimator_name, figsize=(1.5, 3)):
     """Make line plots."""
-    assert np.logical_xor(
-        'nrepeats' in df_temp.index.names, 'nlive' in df_temp.index.names), (
-            df_temp.index.names)
+    x_label_map = {'ndim': 'number of dimensions $d$',
+                   'nlive': r'{\sc PolyChord} number of live points',
+                   'nrepeats': r'{\sc PolyChord} \texttt{num\_repeats}'}
+    xaxis_name = [name for name in df_temp.index.names if name
+                  in x_label_map.keys()]
+    assert len(xaxis_name) == 1, df_temp.index.names
+    xaxis_name = xaxis_name[0]
     likelihood_list = list(set(df_temp.index.get_level_values('likelihood')))
     linestyles = ['-', '--', ':', '-.']
-    x_label_map = {'nlive': r'{\sc PolyChord} number of live points',
-                   'nrepeats': r'{\sc PolyChord} \texttt{num\_repeats}'}
+    # Make the plot
     fig, axes = plt.subplots(nrows=len(likelihood_list), ncols=1,
                              sharex=True, figsize=figsize)
     fig.subplots_adjust(hspace=0)
@@ -137,10 +139,11 @@ def get_line_plot(df_temp, estimator_name, figsize=(1.5, 3)):
                 yerr=ser.xs('uncertainty', level='result type'),
                 ax=ax, label=calc, linestyle=linestyles[nc])
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-        if ('nlive' in df_temp.index.names and likelihood_name == 'Gaussian'
+        if (xaxis_name == 'nlive' and likelihood_name == 'Gaussian'
                 and estimator_name == e.get_latex_name(e.param_mean)):
             ax.set_yticks([0, 0.05, 0.1])
-        ax.set_xscale('log')
+        if xaxis_name != 'ndim':
+            ax.set_xscale('log')
         ax.set_ylabel('St.Dev.')
         title = (likelihood_name.title().replace('_', ' ')
                  .replace('Shell', 'shell'))
@@ -154,8 +157,4 @@ def get_line_plot(df_temp, estimator_name, figsize=(1.5, 3)):
             ax.set_yticks(labels[:-1])
         if nlike == len(likelihood_list) - 1:
             ax.set_xlabel(x_label_map[ax.get_xlabel()])
-    # Manually adjust saving as described in (https://matplotlib.org/devdocs
-    # /api/_as_gen/matplotlib.pyplot.subplots_adjust.html)
-    fig.subplots_adjust(left=0.17, right=0.995, bottom=0.07, top=0.99,
-                        hspace=0)
     return fig

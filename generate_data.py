@@ -67,15 +67,17 @@ def main():
     # Settings
     # --------
     # Run settings
-    inds = list(range(1, 11))
+    inds = list(range(1, 101))
     parallel = True
     max_workers = 6
     compiled = False
     # nlive and nrepeat settings
-    nd_nl_nr_list = diagnostics.settings.get_nd_nl_nr_list(
-        nd_list=[2, 4],
-        nl_list=[10, 20, 50],
-        nr_list=[1, 2, 5])
+    # --------------------------
+    nd_nl_nr_list = diagnostics.settings.get_nd_nl_nr_list()
+    # nd_nl_nr_list = diagnostics.settings.get_nd_nl_nr_list(
+    #     nd_list=[2, 4],
+    #     nl_list=[10, 20, 50, 100],
+    #     nr_list=[1, 2, 5])
     # nd_nl_nr_list = [diagnostics.settings.get_default_nd_nl_nr()]
     # Likelihood and prior settings
     # -----------------------------
