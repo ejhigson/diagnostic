@@ -1,22 +1,22 @@
 #!/usr/bin/env python
-"""Utilites for loading data from generate_data.py."""
+"""Functions for load PolyChord data made with generate_data.py."""
 import warnings
 import tqdm
 import pandas as pd
-import numpy as np
 import nestcheck.ns_run_utils
 import nestcheck.plots
 import nestcheck.data_processing
 import nestcheck.diagnostics_tables
 import nestcheck.estimators as e
 import dyPolyChord.output_processing
+import diagnostics.results_utils
+import diagnostics.settings
 
 
-def get_file_root(likelihood_name, nlive, nrepeats, **kwargs):
+def get_file_root(likelihood_name, ndim, nlive, nrepeats, **kwargs):
     """File root with default prior and ndim"""
     prior_name = kwargs.pop('prior_name', 'Uniform')
     prior_scale = kwargs.pop('prior_scale', 30)
-    ndim = kwargs.pop('ndim')
     return dyPolyChord.output_processing.settings_root(
         likelihood_name.title().replace(' ', '').replace('gamma', 'Gamma'),
         prior_name, ndim, prior_scale=prior_scale, nlive_const=nlive,
@@ -25,10 +25,12 @@ def get_file_root(likelihood_name, nlive, nrepeats, **kwargs):
 
 def get_run_list(likelihood_name, nrun, **kwargs):
     """Helper function for loading lists of nested sampling runs."""
-    nlive = kwargs.pop('nlive', 100)
-    nrepeats = kwargs.pop('nrepeats', 5)
+    ndim, nlive, nrepeats = diagnostics.settings.get_default_nd_nl_nr()
+    ndim = kwargs.pop('ndim', ndim)
+    nlive = kwargs.pop('nlive', nlive)
+    nrepeats = kwargs.pop('nrepeats', nrepeats)
     nrun_start = kwargs.pop('nrun_start', 1)
-    file_root = get_file_root(likelihood_name, nlive, nrepeats, **kwargs)
+    file_root = get_file_root(likelihood_name, ndim, nlive, nrepeats, **kwargs)
     files = [file_root + '_' + str(i).zfill(3) for i in
              range(nrun_start, nrun + nrun_start)]
     return nestcheck.data_processing.batch_process_data(files)
@@ -43,42 +45,34 @@ def get_run_list_dict(likelihood_list, nrun, **kwargs):
     return run_list_dict
 
 
-def get_results_df(likelihood_list, nd_nl_nr_list, estimator_list,
-                   **kwargs):
+def get_results_df(likelihood_list, nd_nl_nr_list, **kwargs):
     """Get a big pandas multiindex data frame with results for different
     likelihoods, nlives and nrepeats."""
+    estimator_list = kwargs.pop(
+        'estimator_list', diagnostics.settings.get_default_estimator_list())
     estimator_names = kwargs.pop(
         'estimator_names',
         [e.get_latex_name(est) for est in estimator_list])
-    n_simulate = kwargs.pop('n_simulate', 5)
+    n_simulate = kwargs.pop('n_simulate', 100)
     nrun = kwargs.pop('nrun', 100)
     summary = kwargs.pop('summary', True)
-    true_values_dict = kwargs.pop('true_values_dict', None)
     results_list = []
     assert len(estimator_list) == len(estimator_names)
     for likelihood_name in tqdm.tqdm_notebook(likelihood_list, leave=False,
                                               desc='likelihoods'):
-        if true_values_dict is not None:
-            true_values = np.full(len(estimator_names), np.nan)
-            for i, name in enumerate(estimator_names):
-                try:
-                    true_values[i] = true_values_dict[likelihood_name][name]
-                except KeyError:
-                    pass
-        else:
-            true_values = None
         for ndim, nlive, nrepeats in tqdm.tqdm_notebook(
                 nd_nl_nr_list, leave=False, desc='ndim, nlive, nrepeats'):
             run_list = get_run_list(likelihood_name, nrun, nlive=nlive,
                                     nrepeats=nrepeats, ndim=ndim)
-            file_root = get_file_root(likelihood_name, nlive, nrepeats,
-                                      ndim=ndim)
+            file_root = get_file_root(likelihood_name, ndim, nlive, nrepeats)
             save_name = 'cache/errors_df_{}_{}runs_{}sim'.format(
                 file_root, len(run_list), n_simulate)
             if kwargs.get('thread_pvalue', False):
                 save_name += '_td'
             if kwargs.get('bs_stat_dist', False):
                 save_name += '_bd'
+            true_values = diagnostics.results_utils.get_true_values(
+                likelihood_name, ndim, estimator_names)
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore', UserWarning)
                 if summary:
@@ -91,7 +85,7 @@ def get_results_df(likelihood_list, nd_nl_nr_list, estimator_list,
                         save_name=save_name, **kwargs)
             new_inds = ['likelihood', 'ndim', 'nlive', 'nrepeats']
             df['likelihood'] = likelihood_name
-            df['ndim'] = nlive
+            df['ndim'] = ndim
             df['nlive'] = nlive
             df['nrepeats'] = nrepeats
             order = new_inds + list(df.index.names)

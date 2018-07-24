@@ -60,14 +60,12 @@ def ratio_bar_plot(errors_df, figsize=(3, 1)):
     ax = fig.add_subplot(111)
     ratio_plot['value'].plot.bar(yerr=ratio_plot['uncertainty'], ax=ax,
                                  label='hello')
-    # ax = plt.gca()
     ax.axhline(2 ** (-0.5), color='black', linestyle='dashed', linewidth=1,
-               label=r'$\sigma_\mathrm{imp}^2 = \sigma_\mathrm{values}^2$')
+               label=r'$\sigma_\mathrm{imp} = \sigma_\mathrm{bs}$')
     ax.set_ylim([0, 1])
     ax.set_ylabel(r'$\sigma_\mathrm{imp}$ / $\sigma_\mathrm{values}$',
                   labelpad=10)
     ax.legend(bbox_to_anchor=(1.02, 1))
-
     # Add line showing 1/sqrt(2)
     plt.xticks(rotation=0)
     return fig

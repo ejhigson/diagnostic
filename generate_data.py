@@ -50,9 +50,7 @@ For more details see PolyChord's README.
 """
 import copy
 import os
-import functools
 import nestcheck.parallel_utils
-import nestcheck.estimators as e
 import dyPolyChord.python_likelihoods as likelihoods
 import dyPolyChord.python_priors as priors
 import dyPolyChord.output_processing
@@ -61,6 +59,7 @@ import dyPolyChord.pypolychord_utils
 import dyPolyChord
 import diagnostics.results_utils
 import diagnostics.data_loading
+import diagnostics.settings
 
 
 def main():
@@ -73,11 +72,11 @@ def main():
     max_workers = 6
     compiled = False
     # nlive and nrepeat settings
-    nd_nl_nr_list = diagnostics.results_utils.get_nd_nl_nr_list(
-        nd_list=[2, 6, 10],
-        nl_list=[10, 20, 50, 200],
-        nr_list=[1, 2, 5, 10])
-    nd_nl_nr_list = [(10, 20, 10)]
+    nd_nl_nr_list = diagnostics.settings.get_nd_nl_nr_list(
+        nd_list=[2, 4],
+        nl_list=[10, 20, 50],
+        nr_list=[1, 2, 5])
+    # nd_nl_nr_list = [diagnostics.settings.get_default_nd_nl_nr()]
     # Likelihood and prior settings
     # -----------------------------
     likelihood_list = [likelihoods.LogGammaMix(),
@@ -148,26 +147,13 @@ def main():
                 max_workers=max_workers, parallel=parallel,
                 tqdm_kwargs={'desc': desc, 'leave': True})
     # Now run and cache results
-    estimator_list = [e.logz,
-                      e.evidence,
-                      e.param_mean,
-                      functools.partial(e.param_mean, param_ind=1),
-                      functools.partial(e.param_mean, param_ind=2),
-                      functools.partial(e.param_mean, param_ind=3),
-                      e.param_squared_mean,
-                      functools.partial(e.param_cred, probability=0.5),
-                      functools.partial(e.param_cred, probability=0.84),
-                      e.r_mean,
-                      functools.partial(e.r_cred, probability=0.84)]
-    true_values_dict = diagnostics.results_utils.get_true_values_dict()
     likelihood_names = [type(like).__name__.replace('Mix', ' mix') for
                         like in likelihood_list]
     results_df = diagnostics.data_loading.get_results_df(
-        likelihood_names, nd_nl_nr_list, estimator_list, n_simulate=100,
+        likelihood_names, nd_nl_nr_list, n_simulate=100,
         nrun=inds[-1], summary=True, save=True, load=False,
         thread_pvalue=False, bs_stat_dist=False,
-        true_values_dict=true_values_dict, include_rmse=True,
-        include_true_values=True, parallel=True)
+        include_rmse=True, include_true_values=True, parallel=True)
     print(results_df)
 
 
