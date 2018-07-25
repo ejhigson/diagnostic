@@ -71,45 +71,61 @@ def ratio_bar_plot(errors_df, figsize=(3, 1)):
     return fig
 
 
-def hist_plot(df_in, calculation, estimator, **kwargs):
-    """Make a histogram plot of the dataframe values."""
-    xlim = kwargs.get('xlim', None)
+def hist_plot(df_in, **kwargs):
+    """Make a histogram plot of the dataframe values.
+
+    Dataframe must have two index levels, with the first level determining the
+    rows of plots and the second level the values to plot on each."""
+    assert df_in.index.nlevels == 2, df_in.index.nlevels
+    xlims = {'thread ks pvalue': [0, 1],
+             'thread ks distance': [0, 0.3],
+             'thread earth mover distance': [0, 0.2],
+             'thread energy distance': [0, 0.4],
+             'bootstrap ks pvalue': [0, 1],
+             'bootstrap ks distance': [0, 1],
+             'bootstrap earth mover distance': [0, 0.25],
+             'bootstrap energy distance': [0, 0.8]}
+    xlims = kwargs.get('xlims', xlims)
     figsize = kwargs.pop('figsize', (6.4, 2.5))
     nbin = kwargs.pop('nbin', 50)
-    likelihood_list = kwargs.pop('likelihood_list', ['Gaussian'])
-    fig, axes = plt.subplots(nrows=1, ncols=len(likelihood_list),
-                             sharex=True, sharey=True, figsize=figsize)
+    if kwargs:
+        raise TypeError('Unexpected **kwargs: {0}'.format(kwargs))
+    fig, axes = plt.subplots(
+        nrows=len(set(df_in.index.get_level_values(0))),
+        ncols=df_in.shape[1], sharex=True, sharey=True, figsize=figsize)
     plt.subplots_adjust(wspace=0)
-    for i, like in enumerate(likelihood_list):
-        try:
-            ax = axes[i]
-        except TypeError:
-            if len(likelihood_list) == 1:
-                ax = axes
-            else:
-                raise
-        df = (df_in.xs(calculation, level='calculation type')
-              .unstack(level='likelihood')[estimator])
-        # Need to set range and number of bins so all plots have same bin
-        # sizes and frequencies can be compared
-        df[like].plot.hist(ax=ax, range=(xlim[0], xlim[1]), bins=nbin,
-                           label=estimator, alpha=0.7)
-        # Add lines for quantiles
-        ax.axvline(df[like].median(), ymax=0.65, color='black',
-                   linestyle='dashed', linewidth=1)
-        ax.set_title(like.replace('Shell', 'shell') + ' ' + estimator, y=0.65)
-        if xlim is not None:
-            ax.set_xlim(xlim)
-        lab = (calculation.replace('thread ', '')
-               .replace('bootstrap ', '').title()
-               .replace('Ks', 'KS').replace('Pvalue', '$p$-value'))
-        ax.set_xlabel(lab)
-        # remove overlappling labels on x axis
-        if i != len(likelihood_list) - 1:
-            if plt.gca().xaxis.get_majorticklocs()[-1] == xlim[1]:
-                xticks = ax.xaxis.get_major_ticks()
-                xticks[-1].label1.set_visible(False)
-        ax.tick_params(axis='y', direction='inout')
+    nax = 0
+    for nr, row_name in enumerate(set(df_in.index.get_level_values(0))):
+        df = df_in.xs(row_name, level=0)
+        for i, (col_name, col) in enumerate(df.iteritems()):
+            nax = i + nr * df_in.shape[1]
+            try:
+                ax = axes[nax]
+            except TypeError:
+                if df_in.shape[1] == 1:
+                    ax = axes
+                else:
+                    raise
+            # Need to set range and number of bins so all plots have same bin
+            # sizes and frequencies can be compared
+            col.plot.hist(ax=ax, range=xlims[row_name], bins=nbin,
+                          label=col_name, alpha=0.7)
+            # Add lines for quantiles
+            ax.axvline(col.median(), ymax=0.65, color='black',
+                       linestyle='dashed', linewidth=1)
+            ax.set_title(col_name, y=0.6)
+            ax.set_xlim(xlims[row_name])
+            lab = (row_name.replace('thread ', '')
+                   .replace('bootstrap ', '').title()
+                   .replace('Ks', 'KS').replace('Pvalue', '$p$-value'))
+            ax.set_xlabel(lab)
+            # remove overlappling labels on x axis
+            if i != df.shape[1] - 1:
+                if (plt.gca().xaxis.get_majorticklocs()[-1] ==
+                        xlims[row_name][1]):
+                    xticks = ax.xaxis.get_major_ticks()
+                    xticks[-1].label1.set_visible(False)
+            ax.tick_params(axis='y', direction='inout')
     return fig
 
 

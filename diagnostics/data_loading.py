@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """Functions for load PolyChord data made with generate_data.py."""
-import warnings
+import os
 import pandas as pd
 import nestcheck.ns_run_utils
 import nestcheck.plots
@@ -63,27 +63,29 @@ def get_results_df(likelihood_list, nd_nl_nr_list, **kwargs):
                                     desc='likelihoods'):
         for ndim, nlive, nrepeats in progress(
                 nd_nl_nr_list, leave=False, desc='ndim, nlive, nrepeats'):
-            run_list = get_run_list(likelihood_name, nrun, nlive=nlive,
-                                    nrepeats=nrepeats, ndim=ndim)
             file_root = get_file_root(likelihood_name, ndim, nlive, nrepeats)
             save_name = 'cache/errors_df_{}_{}runs_{}sim'.format(
-                file_root, len(run_list), n_simulate)
+                file_root, nrun, n_simulate)
             if kwargs.get('thread_pvalue', False):
                 save_name += '_td'
             if kwargs.get('bs_stat_dist', False):
                 save_name += '_bd'
             true_values = diagnostics.results_utils.get_true_values(
                 likelihood_name, ndim, estimator_names)
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore', UserWarning)
-                if summary:
-                    df = nestcheck.diagnostics_tables.run_list_error_summary(
-                        run_list, estimator_list, estimator_names, n_simulate,
-                        save_name=save_name, true_values=true_values, **kwargs)
-                else:
-                    df = nestcheck.diagnostics_tables.run_list_error_values(
-                        run_list, estimator_list, estimator_names, n_simulate,
-                        save_name=save_name, **kwargs)
+            if os.path.exists(save_name + '.pkl'):
+                run_list = None
+            else:
+                print('File not found: {}.pkl'.format(save_name))
+                run_list = get_run_list(likelihood_name, nrun, nlive=nlive,
+                                        nrepeats=nrepeats, ndim=ndim)
+            if summary:
+                df = nestcheck.diagnostics_tables.run_list_error_summary(
+                    run_list, estimator_list, estimator_names, n_simulate,
+                    save_name=save_name, true_values=true_values, **kwargs)
+            else:
+                df = nestcheck.diagnostics_tables.run_list_error_values(
+                    run_list, estimator_list, estimator_names, n_simulate,
+                    save_name=save_name, **kwargs)
             new_inds = ['likelihood', 'ndim', 'nlive', 'nrepeats']
             df['likelihood'] = likelihood_name
             df['ndim'] = ndim

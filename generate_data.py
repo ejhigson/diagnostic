@@ -160,7 +160,8 @@ def main():
                 nrun=inds[-1], summary=True, save=True, load=True,
                 thread_pvalue=False, bs_stat_dist=False,
                 include_rmse=True, include_true_values=True, parallel=True)
-            if (ndim, nlive, num_repeats) == diagnostics.settings.get_default_nd_nl_nr():
+            if ((ndim, nlive, num_repeats) ==
+                    diagnostics.settings.get_default_nd_nl_nr()):
                 # Cache bs stat and thread values df too
                 # Use summary=True as caching is done to raw values and this
                 # protects against unexpected kwarg errors as summary pops some
