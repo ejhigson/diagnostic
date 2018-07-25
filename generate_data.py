@@ -152,15 +152,22 @@ def main():
                 run_func, settings_list,
                 max_workers=max_workers, parallel=parallel,
                 tqdm_kwargs={'desc': desc, 'leave': True})
-    # Now run and cache results
-    likelihood_names = [type(like).__name__.replace('Mix', ' mix') for
-                        like in likelihood_list]
-    results_df = diagnostics.data_loading.get_results_df(
-        likelihood_names, nd_nl_nr_list, n_simulate=100,
-        nrun=inds[-1], summary=True, save=True, load=False,
-        thread_pvalue=False, bs_stat_dist=False,
-        include_rmse=True, include_true_values=True, parallel=True)
-    print(results_df)
+            # Cache results dataframe
+            # -----------------------
+            diagnostics.data_loading.get_results_df(
+                [type(likelihood).__name__.replace('Mix', ' mix')],
+                [(ndim, nlive, num_repeats)], n_simulate=100,
+                nrun=inds[-1], summary=True, save=True, load=True,
+                thread_pvalue=False, bs_stat_dist=False,
+                include_rmse=True, include_true_values=True, parallel=True)
+            if (ndim, nlive, num_repeats) == settings.get_default_nd_nl_nr():
+                # Cache bs stat and thread values df
+                diagnostics.data_loading.get_results_df(
+                    [type(likelihood).__name__.replace('Mix', ' mix')],
+                    [(ndim, nlive, num_repeats)], n_simulate=100,
+                    nrun=inds[-1], summary=False, save=True, load=True,
+                    thread_pvalue=True, bs_stat_dist=True,
+                    include_rmse=True, include_true_values=True, parallel=True)
 
 
 if __name__ == '__main__':
