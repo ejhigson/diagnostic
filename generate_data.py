@@ -73,7 +73,6 @@ def main():
     # Run settings
     inds = list(range(1, 101))
     parallel = True
-    max_workers = 6
     compiled = False
     # nlive and nrepeat settings
     # --------------------------
@@ -106,6 +105,11 @@ def main():
         'max_ndead': -1,
         'cluster_posteriors': False,
         'boost_posterior': 0.0}
+    if 'ed' in os.getcwd().split('/'):
+        max_workers = 6  # running on novatech laptop
+    else:
+        max_workers = None  # running on cluster
+    print('Running with max_workers={}'.format(max_workers))
     prior_scale = 30
     prior = priors.Uniform(-prior_scale, prior_scale)
     # Before running in parallel make sure base_dir exists, as if multiple
