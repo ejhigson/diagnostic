@@ -19,7 +19,7 @@
 #! The skylake/skylake-himem nodes have 32 CPUs (cores) each.
 #SBATCH --ntasks=32
 #! How much wallclock time will be required?
-#SBATCH --time=00:10:00
+#SBATCH --time=10:00:00
 #! What types of email messages do you wish to receive?
 #SBATCH --mail-type=ALL
 #! Set output file
@@ -30,14 +30,14 @@
 ##SBATCH --no-requeue
 
 #! For 6GB per CPU, set "-p skylake"; for 12GB per CPU, set "-p skylake-himem": 
-#SBATCH -p skylake-himem
+#SBATCH -p skylake
 
 #! sbatch directives end here (put any additional directives above this line)
 
 #! Notes:
 #! Charging is determined by core number*walltime.
 #! The --ntasks value refers to the number of tasks to be launched by SLURM only. This
-#! usually equates to the number of MPI tasks launched. Reduce this from nodes*16 if
+#! usually equates to the number of MPI tasks launched. Reduce this from nodes*32 if
 #! demanded by memory requirements, or if OMP_NUM_THREADS>1.
 #! Each task is allocated 1 core by default, and each core is allocated 5990MB (skylake)
 #! and 12040MB (skylake-himem). If this is insufficient, also specify
