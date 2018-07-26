@@ -130,8 +130,12 @@ def hist_plot(df_in, **kwargs):
     return fig
 
 
-def get_line_plot(df_in, calculation_types, figsize=(1.5, 3)):
+def get_line_plot(df_in, calculation_types, **kwargs):
     """Make line plots."""
+    figsize = kwargs.pop('figsize', (1.5, 3))
+    linestyles = kwargs.pop('linestyles', ['-', '--', ':', '-.'] * 3)
+    if kwargs:
+        raise TypeError('Unexpected **kwargs: {0}'.format(kwargs))
     x_label_map = {'ndim': 'number of dimensions $d$',
                    'nlive': r'{\sc PolyChord} \texttt{nlive}',
                    'nrepeats': r'{\sc PolyChord} \texttt{num\_repeats}'}
@@ -139,7 +143,6 @@ def get_line_plot(df_in, calculation_types, figsize=(1.5, 3)):
                   in x_label_map.keys()]
     assert len(xaxis_name) == 1, df_in.index.names
     xaxis_name = xaxis_name[0]
-    linestyles = ['-', '--', ':', '-.'] * 3
     # Make the plot
     fig, axes = plt.subplots(
         nrows=df_in.shape[1], sharex=True, ncols=1, figsize=figsize)
