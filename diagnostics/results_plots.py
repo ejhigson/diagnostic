@@ -2,11 +2,10 @@
 """Functions for making the plots in the paper."""
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter
+# from matplotlib.ticker import FormatStrFormatter
 import getdist
 import getdist.plots
 import nestcheck.ns_run_utils
-import nestcheck.estimators as e
 import diagnostics.results_utils
 
 
@@ -75,7 +74,9 @@ def hist_plot(df_in, **kwargs):
     """Make a histogram plot of the dataframe values.
 
     Dataframe must have two index levels, with the first level determining the
-    rows of plots and the second level the values to plot on each."""
+    x axis of plots (and if it has more than one value, the number of rows of
+    plots).
+    Each column represents a plot and the column name is the plot title."""
     assert df_in.index.nlevels == 2, df_in.index.nlevels
     xlims = {'thread ks pvalue': [0, 1],
              'thread ks distance': [0, 0.3],
@@ -129,48 +130,50 @@ def hist_plot(df_in, **kwargs):
     return fig
 
 
-def get_line_plot(df_temp, estimator_name, figsize=(1.5, 3)):
+def get_line_plot(df_in, calculation_types, figsize=(1.5, 3)):
     """Make line plots."""
     x_label_map = {'ndim': 'number of dimensions $d$',
-                   'nlive': r'{\sc PolyChord} number of live points',
+                   'nlive': r'{\sc PolyChord} \texttt{nlive}',
                    'nrepeats': r'{\sc PolyChord} \texttt{num\_repeats}'}
-    xaxis_name = [name for name in df_temp.index.names if name
+    xaxis_name = [name for name in df_in.index.names if name
                   in x_label_map.keys()]
-    assert len(xaxis_name) == 1, df_temp.index.names
+    assert len(xaxis_name) == 1, df_in.index.names
     xaxis_name = xaxis_name[0]
-    likelihood_list = list(set(df_temp.index.get_level_values('likelihood')))
-    linestyles = ['-', '--', ':', '-.']
+    linestyles = ['-', '--', ':', '-.'] * 3
     # Make the plot
-    fig, axes = plt.subplots(nrows=len(likelihood_list), ncols=1,
-                             sharex=True, figsize=figsize)
+    fig, axes = plt.subplots(
+        nrows=df_in.shape[1], sharex=True, ncols=1, figsize=figsize)
     fig.subplots_adjust(hspace=0)
-    for nlike, likelihood_name in enumerate(likelihood_list):
-        ax = axes[nlike]
-        for nc, calc in enumerate(['values std', 'bootstrap std mean',
-                                   'implementation std']):
-            ser = (df_temp.xs(likelihood_name, level='likelihood')
-                   .xs(calc, level='calculation type'))[estimator_name]
-            ser = ser.sort_index()
-            ser.xs('value', level='result type').plot.line(
-                yerr=ser.xs('uncertainty', level='result type'),
-                ax=ax, label=calc, linestyle=linestyles[nc])
-        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-        if (xaxis_name == 'nlive' and likelihood_name == 'Gaussian'
-                and estimator_name == e.get_latex_name(e.param_mean)):
-            ax.set_yticks([0, 0.05, 0.1])
-        if xaxis_name != 'ndim':
-            ax.set_xscale('log')
-        ax.set_ylabel('St.Dev.')
-        title = (likelihood_name.title().replace('_', ' ')
-                 .replace('Shell', 'shell'))
-        title += ' ' + estimator_name
-        ax.set_title(title, y=0.72)
+    df = df_in.sort_index(level=xaxis_name)
+    # Iterate over axes (correspond to estimators = df columns)
+    for nax, (est_name, est_series) in enumerate(df.iteritems()):
+        ax = axes[nax]
+        # Iterate over calculation types (= different lines on axis)
+        for ncalc, calc_name in enumerate(calculation_types):
+            calc_series = est_series.xs(calc_name, level='calculation type')
+            # Plot values part of series as line with yerr=uncertainty
+            # These are labeled in the 'result type' level of the multiindex
+            values = calc_series.xs('value', level='result type')
+            yerr = calc_series.xs('uncertainty', level='result type')
+            values.plot.line(yerr=yerr, ax=ax, linestyle=linestyles[ncalc])
         # make sure the labels of plots above and below each other don't clash
         ax.set_ylim([0, ax.get_yticks()[-1]])
         ax.tick_params(top=True, direction='inout')
-        if nlike != 0:
+        if nax != 0:
             labels = ax.get_yticks().tolist()
             ax.set_yticks(labels[:-1])
-        if nlike == len(likelihood_list) - 1:
-            ax.set_xlabel(x_label_map[ax.get_xlabel()])
+        if nax == len(axes) - 1:
+            ax.set_xlabel(x_label_map[xaxis_name])
+        # # Format axes decimal places
+        # if ax.get_ylim()[1] < 10:
+        #     dp = 2
+        # elif ax.get_ylim()[1] < 100:
+        #     dp = 1
+        # else:
+        #     dp = 0
+        # ax.yaxis.set_major_formatter(FormatStrFormatter('%.{}f'.format(dp)))
+        if xaxis_name != 'ndim':
+            ax.set_xscale('log')
+        # ax.set_ylabel('St.Dev.')
+        ax.set_title(est_name, y=0.6)
     return fig
