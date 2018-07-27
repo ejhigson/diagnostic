@@ -68,7 +68,8 @@ def default_logx_min(likelihood_name, ndim):
 def get_default_nd_nl_nr(as_dict=False):
     """Default values for dim, nlive and num_repeats - the paper individually
     varies each while holding the other two constant."""
-    default = (10, 200, 10)
+    # default = (10, 200, 10)
+    default = (10, 250, 50)
     if not as_dict:
         return default
     else:
