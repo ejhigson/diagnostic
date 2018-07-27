@@ -75,6 +75,16 @@ def get_default_nd_nl_nr(as_dict=False):
         return {'ndim': default[0], 'nlive': default[1],
                 'nrepeats': default[2]}
 
+def get_pcdefault_nd_nl_nr(ndim_list):
+    """Get default values of nlive and num_repeats given a list of dimensions.
+
+    PolyChord defaults are:
+
+    num_repeats = ndim * 5
+    nlive = ndim * 25
+    """
+    return [(nd, nd * 25, nd * 5) for nd in ndim_list]
+
 
 def get_nd_nl_nr_list(**kwargs):
     """Get list of (dim, nlive, nrepeats) tuples."""

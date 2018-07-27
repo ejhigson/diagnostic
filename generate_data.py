@@ -62,6 +62,8 @@ def main():
     #     nl_list=[10, 20, 50, 100],
     #     nr_list=[1, 2, 5])
     # nd_nl_nr_list = [diagnostics.settings.get_default_nd_nl_nr()]
+    # nd_nl_nr_list = diagnostics.settings.get_pcdefault_nd_nl_nr(
+    #     [2, 4, 6, 10, 20, 40, 60, 100])
     # Likelihood and prior settings
     # -----------------------------
     likelihood_list = [likelihoods.LogGammaMix(),
