@@ -7,7 +7,7 @@ Runs the PolyChord data used in the paper and stores it in the directory
 'chains'.
 
 Requies:
-    * PolyChord (install without MPI)
+    * PolyChord
     * nestcheck
     * dyPolyChord
 
@@ -17,36 +17,14 @@ in the paper use standard (rather than dynamic) nested sampling.
 ### Random seeding
 
 Random seeding is used for reproducible results, which is only
-possible when PolyChord is installed *without* MPI due to the unpredictable
+possible when PolyChord is run *without* MPI due to the unpredictable
 order in which threads will provide samples (see the PolyChord
-documentation for more details). As generating repeated runs is embarrassingly
-parallel we can instead parallelise using concurrent.futures via nestcheck's
+documentation for more details). As generating repeated runs is "embarrassingly
+parallel" we can instead parallelise using concurrent.futures via nestcheck's
 parallel_apply function.
 
 Note also that PolyChord's random number generator can vary between systems and
-compilers, so your results may not exactly match those in the paper (which were
-run on Ubuntu 18.04 with PolyChord compiled using gfortran 7.3.0).
-
-These results can be run with a python or C++ likelihood by setting the
-'compiled' variable to True or False. C++ is *much* faster but requires
-compiling with PolyChord.
-
-### Compiling the C++ likelihood
-
-With PolyChord 1.14, C++ likelihoods like gaussian.cpp can be compiled with
-the following commands. This assumes PolyChord is already installed, without
-MPI, in location path_to_pc/PolyChord.
-
-    $ cp gaussian.cpp
-    ~/path_to_pc/PolyChord/likelihoods/CC_ini/CC_ini_likelihood.cpp
-    $ cd ~/path_to_pc/PolyChord
-    $ make polychord_CC_ini
-
-This produces an executable at PolyChord/bin/polychord_CC_ini which you can
-move back to the current directory to run (or edit RunCompiledPolyChord's
-executable path accordingly).
-
-For more details see PolyChord's README.
+compilers, so your results may not exactly match those in the paper.
 """
 import copy
 import os
@@ -61,6 +39,9 @@ import diagnostics.results_utils
 import diagnostics.data_loading
 import diagnostics.settings
 try:
+    # This initialises MPI, allowing running multiple runs from the same python
+    # instance even if PolyChord is installed with MPI (so you don't have to
+    # reinstall it without MPI).
     from mpi4py import MPI  # pylint: disable=unused-import
 except ImportError:
     pass
@@ -73,7 +54,6 @@ def main():
     # Run settings
     inds = list(range(1, 101))
     parallel = True
-    compiled = False
     # nlive and nrepeat settings
     # --------------------------
     nd_nl_nr_list = diagnostics.settings.get_nd_nl_nr_list()
@@ -120,18 +100,8 @@ def main():
         os.makedirs(settings_dict['base_dir'] + '/clusters')
     for likelihood in likelihood_list:
         for ndim, nlive, num_repeats in nd_nl_nr_list:
-            if not compiled:
-                run_func = dyPolyChord.pypolychord_utils.RunPyPolyChord(
-                    likelihood, prior, ndim)
-            else:
-                assert type(prior).__name__ == 'Uniform', (
-                    'Prior={} - you may need to change get_prior_block_str '
-                    'arguments'.format(type(prior).__name__))
-                assert len(likelihood_list) == 1
-                prior_str = dyPolyChord.polychord_utils.get_prior_block_str(
-                    'uniform', [float(-prior_scale), float(prior_scale)], ndim)
-                run_func = dyPolyChord.polychord_utils.RunCompiledPolyChord(
-                    './polychord_CC_ini', prior_str)
+            run_func = dyPolyChord.pypolychord_utils.RunPyPolyChord(
+                likelihood, prior, ndim)
             # make list of settings dictionaries for the different repeats
             file_root = dyPolyChord.output_processing.settings_root(
                 type(likelihood).__name__,
