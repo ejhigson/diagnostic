@@ -75,29 +75,33 @@ def get_results_df(likelihood_list, nd_nl_nr_list, **kwargs):
                 save_name += '_bd'
             # Get results
             # If cache exists it will be loaded without checking for ns runs
-            if os.path.exists(save_name + '.pkl'):
-                run_list = None
-            else:
-                print('File not found: {}.pkl'.format(save_name))
-                run_list = get_run_list(likelihood_name, nrun, nlive=nlive,
-                                        nrepeats=nrepeats, ndim=ndim)
-            df = nestcheck.diagnostics_tables.run_list_error_values(
-                run_list, estimator_list, estimator_names, n_simulate,
-                save_name=save_name, **kwargs)
-            if summary:
-                true_values = diagnostics.results_utils.get_true_values(
-                    likelihood_name, ndim, estimator_names)
-                df = nestcheck.diagnostics_tables.error_values_summary(
-                    df, true_values=true_values, include_rmse=include_rmse,
-                    include_true_values=include_true_values)
-            new_inds = ['likelihood', 'ndim', 'nlive', 'nrepeats']
-            df['likelihood'] = likelihood_name
-            df['ndim'] = ndim
-            df['nlive'] = nlive
-            df['nrepeats'] = nrepeats
-            order = new_inds + list(df.index.names)
-            df.set_index(new_inds, drop=True, append=True, inplace=True)
-            df = df.reorder_levels(order)
-            results_list.append(df)
+            # If neither cache nor runs exist, will continue to next loop
+            try:
+                if os.path.exists(save_name + '.pkl'):
+                    run_list = None
+                else:
+                    print('File not found: {}.pkl'.format(save_name))
+                    run_list = get_run_list(likelihood_name, nrun, nlive=nlive,
+                                            nrepeats=nrepeats, ndim=ndim)
+                df = nestcheck.diagnostics_tables.run_list_error_values(
+                    run_list, estimator_list, estimator_names, n_simulate,
+                    save_name=save_name, **kwargs)
+                if summary:
+                    true_values = diagnostics.results_utils.get_true_values(
+                        likelihood_name, ndim, estimator_names)
+                    df = nestcheck.diagnostics_tables.error_values_summary(
+                        df, true_values=true_values, include_rmse=include_rmse,
+                        include_true_values=include_true_values)
+                new_inds = ['likelihood', 'ndim', 'nlive', 'nrepeats']
+                df['likelihood'] = likelihood_name
+                df['ndim'] = ndim
+                df['nlive'] = nlive
+                df['nrepeats'] = nrepeats
+                order = new_inds + list(df.index.names)
+                df.set_index(new_inds, drop=True, append=True, inplace=True)
+                df = df.reorder_levels(order)
+                results_list.append(df)
+            except OSError:
+                pass
     results = pd.concat(results_list)
     return results
