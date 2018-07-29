@@ -90,12 +90,14 @@ def get_pcdefault_nd_nl_nr(ndim_list):
 def get_nd_nl_nr_list(**kwargs):
     """Get list of (dim, nlive, nrepeats) tuples."""
     defaults = get_default_nd_nl_nr()
-    nd_list = kwargs.pop('nd_list', [2, 4, 10, 20, 40, 60, 100])
+    # nd_list = kwargs.pop('nd_list', [2, 4, 10, 20, 40, 60, 100])
+    nd_list = kwargs.pop('nd_list', [2, 4, 10, 20, 30, 40, 50])
     nl_list = kwargs.pop('nl_list', [10, 20, 40, 100, 200, 400, 1000])
     nr_list = kwargs.pop('nr_list', [1, 2, 4, 10, 20, 40, 100, 200, 400, 1000])
-    nd_nl_nr_list = []
-    for nd in nd_list:
-        nd_nl_nr_list.append((nd, defaults[1], defaults[2]))
+    nd_nl_nr_list = get_pcdefault_nd_nl_nr(nd_list)
+    # nd_nl_nr_list = []
+    # for nd in nd_list:
+    #     nd_nl_nr_list.append((nd, defaults[1], defaults[2]))
     for nl in nl_list:
         nd_nl_nr_list.append((defaults[0], nl, defaults[2]))
     for nr in nr_list:
