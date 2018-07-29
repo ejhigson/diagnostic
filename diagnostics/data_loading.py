@@ -53,16 +53,19 @@ def get_results_df(likelihood_list, nd_nl_nr_list, **kwargs):
     estimator_names = kwargs.pop(
         'estimator_names',
         [e.get_latex_name(est) for est in estimator_list])
+    assert len(estimator_list) == len(estimator_names)
     n_simulate = kwargs.pop('n_simulate', 100)
     nrun = kwargs.pop('nrun', 100)
     summary = kwargs.pop('summary', True)
+    include_rmse = kwargs.pop('include_rmse', False)
+    include_true_values = kwargs.pop('include_true_values', False)
     results_list = []
-    assert len(estimator_list) == len(estimator_names)
     progress = nestcheck.parallel_utils.select_tqdm()
     for likelihood_name in progress(likelihood_list, leave=False,
                                     desc='likelihoods'):
         for ndim, nlive, nrepeats in progress(
                 nd_nl_nr_list, leave=False, desc='ndim, nlive, nrepeats'):
+            # Get the cache save name
             file_root = get_file_root(likelihood_name, ndim, nlive, nrepeats)
             save_name = 'cache/errors_df_{}_{}runs_{}sim'.format(
                 file_root, nrun, n_simulate)
@@ -70,22 +73,23 @@ def get_results_df(likelihood_list, nd_nl_nr_list, **kwargs):
                 save_name += '_td'
             if kwargs.get('bs_stat_dist', False):
                 save_name += '_bd'
-            true_values = diagnostics.results_utils.get_true_values(
-                likelihood_name, ndim, estimator_names)
+            # Get results
+            # If cache exists it will be loaded without checking for ns runs
             if os.path.exists(save_name + '.pkl'):
                 run_list = None
             else:
                 print('File not found: {}.pkl'.format(save_name))
                 run_list = get_run_list(likelihood_name, nrun, nlive=nlive,
                                         nrepeats=nrepeats, ndim=ndim)
+            df = nestcheck.diagnostics_tables.run_list_error_values(
+                run_list, estimator_list, estimator_names, n_simulate,
+                save_name=save_name, **kwargs)
             if summary:
-                df = nestcheck.diagnostics_tables.run_list_error_summary(
-                    run_list, estimator_list, estimator_names, n_simulate,
-                    save_name=save_name, true_values=true_values, **kwargs)
-            else:
-                df = nestcheck.diagnostics_tables.run_list_error_values(
-                    run_list, estimator_list, estimator_names, n_simulate,
-                    save_name=save_name, **kwargs)
+                true_values = diagnostics.results_utils.get_true_values(
+                    likelihood_name, ndim, estimator_names)
+                df = nestcheck.diagnostics_tables.error_values_summary(
+                    df, true_values=true_values, include_rmse=include_rmse,
+                    include_true_values=include_true_values)
             new_inds = ['likelihood', 'ndim', 'nlive', 'nrepeats']
             df['likelihood'] = likelihood_name
             df['ndim'] = ndim
