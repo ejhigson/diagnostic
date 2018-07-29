@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Functions for making the plots in the paper."""
 import functools
-from more_itertools import unique_everseen
+import more_itertools
 import nestcheck.estimators as e
 import diagnostics.results_utils
 
@@ -102,4 +102,4 @@ def get_nd_nl_nr_list(**kwargs):
         nd_nl_nr_list.append((defaults[0], nl, defaults[2]))
     for nr in nr_list:
         nd_nl_nr_list.append((defaults[0], defaults[1], nr))
-    return list(unique_everseen(nd_nl_nr_list))
+    return list(more_itertools.unique_everseen(nd_nl_nr_list))
