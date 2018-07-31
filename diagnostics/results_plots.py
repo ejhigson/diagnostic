@@ -157,6 +157,10 @@ def get_line_plot(df_in, calculation_types, **kwargs):
             # Plot values part of series as line with yerr=uncertainty
             # These are labeled in the 'result type' level of the multiindex
             values = calc_series.xs('value', level='result type')
+            if calc_name == 'values mean':
+                values -= (est_series
+                           .xs('true values', level='calculation type')
+                           .xs('value', level='result type'))
             yerr = calc_series.xs('uncertainty', level='result type')
             values.plot.line(yerr=yerr, ax=ax, linestyle=linestyles[ncalc])
         # make sure the labels of plots above and below each other don't clash
@@ -164,7 +168,11 @@ def get_line_plot(df_in, calculation_types, **kwargs):
         ax.tick_params(top=True, direction='inout')
         if nax != 0:
             labels = ax.get_yticks().tolist()
-            ax.set_yticks(labels[:-1])
+            if len(labels) > 2:
+                ax.set_yticks(labels[:-1])
+            else:
+                assert len(labels) == 2, labels
+                ax.set_yticks([labels[0], labels[1] * 0.5])
         if nax == len(axes) - 1:
             ax.set_xlabel(x_label_map[xaxis_name])
         # # Format axes decimal places
