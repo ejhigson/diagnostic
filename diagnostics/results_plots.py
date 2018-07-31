@@ -127,6 +127,13 @@ def hist_plot(df_in, **kwargs):
                     xticks = ax.xaxis.get_major_ticks()
                     xticks[-1].label1.set_visible(False)
             ax.tick_params(axis='y', direction='inout')
+        # Custom ylims for paper
+        # Perform on outer loop after every estimator is plotted as the y axis
+        # is shared
+        if 250 < ax.get_ylim()[1] < 500:
+            ax.set_ylim([0, 500])
+        elif 2000 < ax.get_ylim()[1] < 4000:
+                ax.set_ylim([0, 4000])
     return fig
 
 
@@ -151,6 +158,7 @@ def get_line_plot(df_in, calculation_types, **kwargs):
     # Iterate over axes (correspond to estimators = df columns)
     for nax, (est_name, est_series) in enumerate(df.iteritems()):
         ax = axes[nax]
+        ax_max_val = 0
         # Iterate over calculation types (= different lines on axis)
         for ncalc, calc_name in enumerate(calculation_types):
             calc_series = est_series.xs(calc_name, level='calculation type')
@@ -163,6 +171,7 @@ def get_line_plot(df_in, calculation_types, **kwargs):
                            .xs('value', level='result type'))
             yerr = calc_series.xs('uncertainty', level='result type')
             values.plot.line(yerr=yerr, ax=ax, linestyle=linestyles[ncalc])
+            ax_max_val = max(ax_max_val, values.max())
         # make sure the labels of plots above and below each other don't clash
         ax.set_ylim([0, ax.get_yticks()[-1]])
         ax.tick_params(top=True, direction='inout')
@@ -175,6 +184,8 @@ def get_line_plot(df_in, calculation_types, **kwargs):
                 ax.set_yticks([labels[0], labels[1] * 0.5])
         if nax == len(axes) - 1:
             ax.set_xlabel(x_label_map[xaxis_name])
+        if ax.get_ylim()[1] * 0.6 > ax_max_val:
+            ax.set_ylim([0, 0.75 * ax.get_ylim()[1]])
         # # Format axes decimal places
         # if ax.get_ylim()[1] < 10:
         #     dp = 2
@@ -185,6 +196,5 @@ def get_line_plot(df_in, calculation_types, **kwargs):
         # ax.yaxis.set_major_formatter(FormatStrFormatter('%.{}f'.format(dp)))
         if xaxis_name != 'ndim':
             ax.set_xscale('log')
-        # ax.set_ylabel('St.Dev.')
         ax.set_title(est_name, y=0.6)
     return fig
