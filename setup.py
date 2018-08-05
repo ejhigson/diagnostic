@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-"""diagnostics setup."""
+"""diagnostic setup."""
 import setuptools
 
 
-setuptools.setup(name='diagnostics',
+setuptools.setup(name='diagnostic',
                  version='0.0.0',
                  author='Edward Higson',
                  install_requires=['nestcheck',
                                    'dyPolyChord',
                                    'more_itertools'],
-                 packages=['diagnostics'])
+                 packages=['diagnostic'])

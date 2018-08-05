@@ -35,9 +35,9 @@ import dyPolyChord.output_processing
 import dyPolyChord.polychord_utils
 import dyPolyChord.pypolychord_utils
 import dyPolyChord
-import diagnostics.results_utils
-import diagnostics.data_loading
-import diagnostics.settings
+import diagnostic.results_utils
+import diagnostic.data_loading
+import diagnostic.settings
 try:
     # This initialises MPI, allowing running multiple runs from the same python
     # instance even if PolyChord is installed with MPI (so you don't have to
@@ -56,13 +56,13 @@ def main():
     parallel = True
     # nlive and nrepeat settings
     # --------------------------
-    nd_nl_nr_list = diagnostics.settings.get_nd_nl_nr_list()
-    # nd_nl_nr_list = diagnostics.settings.get_nd_nl_nr_list(
+    nd_nl_nr_list = diagnostic.settings.get_nd_nl_nr_list()
+    # nd_nl_nr_list = diagnostic.settings.get_nd_nl_nr_list(
     #     nd_list=[2, 4],
     #     nl_list=[10, 20, 50, 100],
     #     nr_list=[1, 2, 5])
-    # nd_nl_nr_list = [diagnostics.settings.get_default_nd_nl_nr()]
-    # nd_nl_nr_list = diagnostics.settings.get_pcdefault_nd_nl_nr(
+    # nd_nl_nr_list = [diagnostic.settings.get_default_nd_nl_nr()]
+    # nd_nl_nr_list = diagnostic.settings.get_pcdefault_nd_nl_nr(
     #     [2, 4, 6, 10, 20, 40, 60, 100])
     # Likelihood and prior settings
     # -----------------------------
@@ -130,19 +130,19 @@ def main():
                 tqdm_kwargs={'desc': desc, 'leave': True})
             # Cache results dataframe
             # -----------------------
-            diagnostics.data_loading.get_results_df(
+            diagnostic.data_loading.get_results_df(
                 [type(likelihood).__name__.replace('Mix', ' mix')],
                 [(ndim, nlive, num_repeats)], n_simulate=100,
                 nrun=inds[-1], summary=True, save=True, load=True,
                 thread_pvalue=False, bs_stat_dist=False,
                 include_rmse=True, include_true_values=True, parallel=True)
             if ((ndim, nlive, num_repeats) ==
-                    diagnostics.settings.get_default_nd_nl_nr()):
+                    diagnostic.settings.get_default_nd_nl_nr()):
                 # Cache bs stat and thread values df too
                 # Use summary=True as caching is done to raw values and this
                 # protects against unexpected kwarg errors as summary pops some
                 # kwargs before getting values
-                diagnostics.data_loading.get_results_df(
+                diagnostic.data_loading.get_results_df(
                     [type(likelihood).__name__.replace('Mix', ' mix')],
                     [(ndim, nlive, num_repeats)], n_simulate=100,
                     nrun=inds[-1], summary=True, save=True, load=True,

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import getdist
 import getdist.plots
 import nestcheck.ns_run_utils
-import diagnostics.results_utils
+import diagnostic.results_utils
 
 
 def getdist_plot(run_list, **kwargs):
@@ -21,7 +21,7 @@ def getdist_plot(run_list, **kwargs):
     if kwargs:
         raise TypeError('Unexpected **kwargs: {0}'.format(kwargs))
     samples_list = []
-    labels = diagnostics.results_utils.param_list_given_dim(
+    labels = diagnostic.results_utils.param_list_given_dim(
         run_list[0]['theta'].shape[1])
     # Strip the $s as getdist adds these
     labels = [lab.replace('$', '') for lab in labels]
@@ -133,7 +133,7 @@ def hist_plot(df_in, **kwargs):
         if 250 < ax.get_ylim()[1] < 500:
             ax.set_ylim([0, 500])
         elif 2000 < ax.get_ylim()[1] < 4000:
-                ax.set_ylim([0, 4000])
+            ax.set_ylim([0, 4000])
     return fig
 
 

@@ -3,12 +3,12 @@
 import functools
 import more_itertools
 import nestcheck.estimators as e
-import diagnostics.results_utils
+import diagnostic.results_utils
 
 
 def get_default_lims(like_name, ndim=20):
     """Get some default param limits for the likelihoods used in the paper."""
-    dim_labels = diagnostics.results_utils.param_list_given_dim(ndim)
+    dim_labels = diagnostic.results_utils.param_list_given_dim(ndim)
     gaussian_lims = [-4, 4]  # define as used in multiple likelihoods
     lims = {}
     if like_name in ['LogGamma mix', 'LogGammaMix']:

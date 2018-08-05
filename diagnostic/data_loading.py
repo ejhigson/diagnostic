@@ -9,8 +9,8 @@ import nestcheck.parallel_utils
 import nestcheck.diagnostics_tables
 import nestcheck.estimators as e
 import dyPolyChord.output_processing
-import diagnostics.results_utils
-import diagnostics.settings
+import diagnostic.results_utils
+import diagnostic.settings
 
 
 def get_file_root(likelihood_name, ndim, nlive, nrepeats, **kwargs):
@@ -25,7 +25,7 @@ def get_file_root(likelihood_name, ndim, nlive, nrepeats, **kwargs):
 
 def get_run_list(likelihood_name, nrun, **kwargs):
     """Helper function for loading lists of nested sampling runs."""
-    ndim, nlive, nrepeats = diagnostics.settings.get_default_nd_nl_nr()
+    ndim, nlive, nrepeats = diagnostic.settings.get_default_nd_nl_nr()
     ndim = kwargs.pop('ndim', ndim)
     nlive = kwargs.pop('nlive', nlive)
     nrepeats = kwargs.pop('nrepeats', nrepeats)
@@ -49,7 +49,7 @@ def get_results_df(likelihood_list, nd_nl_nr_list, **kwargs):
     """Get a big pandas multiindex data frame with results for different
     likelihoods, nlives and nrepeats."""
     estimator_list = kwargs.pop(
-        'estimator_list', diagnostics.settings.get_default_estimator_list())
+        'estimator_list', diagnostic.settings.get_default_estimator_list())
     estimator_names = kwargs.pop(
         'estimator_names',
         [e.get_latex_name(est) for est in estimator_list])
@@ -87,7 +87,7 @@ def get_results_df(likelihood_list, nd_nl_nr_list, **kwargs):
                     run_list, estimator_list, estimator_names, n_simulate,
                     save_name=save_name, **kwargs)
                 if summary:
-                    true_values = diagnostics.results_utils.get_true_values(
+                    true_values = diagnostic.results_utils.get_true_values(
                         likelihood_name, ndim, estimator_names)
                     df = nestcheck.diagnostics_tables.error_values_summary(
                         df, true_values=true_values, include_rmse=include_rmse,
