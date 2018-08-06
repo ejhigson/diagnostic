@@ -88,7 +88,9 @@ def main():
         'cluster_posteriors': False,
         'boost_posterior': 0.0}
     if 'ed' in os.getcwd().split('/'):
-        max_workers = 6  # running on novatech laptop
+        # running on laptop - don't use all the processors so I can do other
+        # stuff without everything getting slow
+        max_workers = 6
     else:
         max_workers = None  # running on cluster
     print('Running with max_workers={}'.format(max_workers))
