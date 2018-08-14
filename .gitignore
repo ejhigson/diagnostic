@@ -12,6 +12,7 @@
 
 # Output
 chains
+chains_planck
 slurm
 submitted_jobs
 
