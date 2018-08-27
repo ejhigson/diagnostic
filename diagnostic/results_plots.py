@@ -9,6 +9,9 @@ import nestcheck.ns_run_utils
 import diagnostic.results_utils
 
 
+COLWIDTH = 3.32153  # latex 2 column format width in inches
+
+
 def getdist_plot(run_list, **kwargs):
     """
     Makes a triangle plot of the nested sampling runs using getdist.
@@ -139,11 +142,17 @@ def hist_plot(df_in, **kwargs):
 
 def get_line_plot(df_in, calculation_types, **kwargs):
     """Make line plots."""
-    figsize = kwargs.pop('figsize', (1.5, 3))
+    left_margin = kwargs.pop('left_margin', 0.3)
+    right_margin = kwargs.pop('right_margin', 0.03)
+    top_margin = kwargs.pop('top_margin', 0.05)
+    bottom_margin = kwargs.pop('bottom_margin', 0.35)
+    default_figsize = (COLWIDTH * 0.97 * 0.5,
+                       len(df_in.columns) * 0.66 + top_margin + bottom_margin)
+    figsize = kwargs.pop('figsize', default_figsize)
     linestyles = kwargs.pop('linestyles', ['-', '--', ':', '-.'] * 3)
     x_label_map = {'ndim': 'number of dimensions $d$',
-                   'nlive': r'{\sc PolyChord} \texttt{nlive}',
-                   'nrepeats': r'{\sc PolyChord} \texttt{num\_repeats}'}
+                   'nlive': r'\texttt{PolyChord nlive}',
+                   'nrepeats': r'\texttt{PolyChord num\_repeats}'}
     xaxis_name = [name for name in df_in.index.names if name
                   in x_label_map.keys()]
     assert len(xaxis_name) == 1, df_in.index.names
@@ -198,4 +207,9 @@ def get_line_plot(df_in, calculation_types, **kwargs):
         if log_scale:
             ax.set_xscale('log')
         ax.set_title(est_name, y=0.6)
+    fig.subplots_adjust(left=(left_margin / figsize[0]),
+                        right=(1 - right_margin / figsize[0]),
+                        top=(1 - top_margin / figsize[1]),
+                        bottom=(bottom_margin / figsize[1]),
+                        hspace=0)
     return fig
