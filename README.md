@@ -22,7 +22,7 @@ Generating the results in the paper requires ``PolyChord`` v1.14, plus the requi
 
 ### Install
 
-The ``diagnostic`` Python module contains high level functions for generating and plotting the results in the paper. Most of this is just convenient wrappers and stored settings for using the ``nestcheck`` module, which contains the functionality shown. ``diagnostic`` can be installed, along with ``nestcheck`` and its other dependencies, by running the following command from within this repo:
+The ``diagnostic`` Python module contains high level functions for generating and plotting the results in the paper. Most of this is just convenient wrappers and stored settings for using the ``nestcheck`` module, which contains the code for performing the tests introduced in the paper. ``diagnostic`` can be installed, along with ``nestcheck`` and its other dependencies, by running the following command from within this repo:
 
 ```
 pip install . --user
