@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Functions for load PolyChord data made with generate_data.py."""
+"""Functions for loading PolyChord data made with generate_data.py."""
 import os
 import pandas as pd
 import nestcheck.ns_run_utils

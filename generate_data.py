@@ -1,18 +1,16 @@
 #!/usr/bin/env python
-"""
-# Generate data using PolyChord
-# -----------------------------
+"""Generate data using PolyChord.
 
 Runs the PolyChord data used in the paper and stores it in the directory
 'chains'.
 
-Requies:
-    * PolyChord
-    * nestcheck
-    * dyPolyChord
+Requires:
+    * diagnostic module (and its dependencies),
+    * PolyChord >= v1.14
 
-dyPolyChord's interface for convenience, but for simplicity all the results
-in the paper use standard (rather than dynamic) nested sampling.
+Results are generated using dyPolyChord's interface for convenience, but
+all the results in the paper use standard (rather than dynamic) nested
+sampling.
 
 ### Random seeding
 
@@ -48,22 +46,25 @@ except ImportError:
 
 
 def main():
-    """Generate PolyChord runs."""
+    """Generate PolyChord runs. Also processes the results into a DataFrame and
+    caches it.
+
+    Nested sampling runs are generating for different settings by looping over:
+
+        * likelihood_list: different likelihoods;
+        * nd_nl_nr_list: list of tuples, each containing (number of dimensions,
+          nlive, nrepeats);
+        * inds: labels for repeated runs to generate with each setting.
+    """
     # Settings
     # --------
+    # If true, many runs are made at the same time via concurrent.futures
+    parallel = True
     # Run settings
     inds = list(range(1, 101))
-    parallel = True
-    # nlive and nrepeat settings
-    # --------------------------
+    # dimensions, nlive, nrepeat settings
+    # -----------------------------------
     nd_nl_nr_list = diagnostic.settings.get_nd_nl_nr_list()
-    # nd_nl_nr_list = diagnostic.settings.get_nd_nl_nr_list(
-    #     nd_list=[2, 4],
-    #     nl_list=[10, 20, 50, 100],
-    #     nr_list=[1, 2, 5])
-    # nd_nl_nr_list = [diagnostic.settings.get_default_nd_nl_nr()]
-    # nd_nl_nr_list = diagnostic.settings.get_pcdefault_nd_nl_nr(
-    #     [2, 4, 6, 10, 20, 40, 60, 100])
     # Likelihood and prior settings
     # -----------------------------
     likelihood_list = [likelihoods.LogGammaMix(),
@@ -130,7 +131,7 @@ def main():
                 run_func, settings_list,
                 max_workers=max_workers, parallel=parallel,
                 tqdm_kwargs={'desc': desc, 'leave': True})
-            # Cache results dataframe
+            # Cache results DataFrame
             # -----------------------
             diagnostic.data_loading.get_results_df(
                 [type(likelihood).__name__.replace('Mix', ' mix')],

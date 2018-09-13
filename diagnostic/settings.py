@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Functions for making the plots in the paper."""
+"""Default settings for paper results."""
 import functools
 import more_itertools
 import nestcheck.estimators as e

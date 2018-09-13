@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Functions for making the plots in the paper."""
+"""Utilities for helping process paper results."""
 import functools
 import numpy as np
 import scipy.integrate
