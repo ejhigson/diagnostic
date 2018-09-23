@@ -7,14 +7,22 @@ import diagnostic.results_utils
 
 
 def get_default_lims(like_name, ndim=20):
-    """Get some default param limits for the likelihoods used in the paper."""
+    r"""Get some default param limits for the likelihoods used in the paper.
+
+    N.B. boldsymbol requires:
+
+    matplotlib.rcParams['text.latex.preamble'] = [r'\usepackage{amsmath}']
+
+    If you can't load amsmath, just use |\theta| instead of
+    |\boldsymbol{\theta}|.
+    """
     dim_labels = diagnostic.results_utils.param_list_given_dim(ndim)
     gaussian_lims = [-4, 4]  # define as used in multiple likelihoods
     lims = {}
     if like_name in ['LogGamma mix', 'LogGammaMix']:
         lims[dim_labels[0]] = [-20, 20]
         lims[dim_labels[1]] = [-20, 20]
-        lims[r'$|\theta|$'] = [10, 20]
+        lims[r'$|\boldsymbol{\theta}|$'] = [10, 20]
         if len(dim_labels) > 2:
             assert len(dim_labels) % 2 == 0, len(dim_labels)
             boundry = (len(dim_labels) // 2) + 1
@@ -28,10 +36,11 @@ def get_default_lims(like_name, ndim=20):
     elif like_name == 'Gaussian':
         for lab in dim_labels:
             lims[lab] = gaussian_lims
-        lims[r'$|\theta|$'] = [0, 6]
+        lims[r'$|\boldsymbol{\theta}|$'] = [0, 6]
     else:
         raise AssertionError(
             'likename={} does not have default limits'.format(like_name))
+    lims[r'$|\theta|$'] = lims[r'$|\boldsymbol{\theta}|$']
     return lims
 
 

@@ -27,10 +27,19 @@ def radius(theta):
 
 
 def get_ftheta_list(labels_in, ndim_max=20):
-    """Get a list of ftheta functions.
+    r"""Get a list of ftheta functions.
 
-    Each ftheta maps a 2d theta array to the function value for each row."""
-    ftheta_dict = {r'$|\theta|$': radius}
+    Each ftheta maps a 2d theta array to the function value for each row.
+
+    N.B. boldsymbol requires:
+
+    matplotlib.rcParams['text.latex.preamble'] = [r'\usepackage{amsmath}']
+
+    If you can't load amsmath, just use |\theta| instead of
+    |\boldsymbol{\theta}|.
+    """
+    ftheta_dict = {r'$|\boldsymbol{\theta}|$': radius,
+                   r'$|\theta|$': radius}
     for i, lab in enumerate(param_list_given_dim(ndim_max)):
         ftheta_dict[lab] = functools.partial(component_value, ind=i)
     return [ftheta_dict[lab] for lab in labels_in]
