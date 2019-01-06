@@ -1,9 +1,10 @@
 # nestcheck: diagnostic tests for nested sampling calculations
 
+[![DOI](http://img.shields.io/badge/DOI-10.1093/mnras/sty3090-darkblue.svg)](https://doi.org/10.1093/mnras/sty3090)
 [![arXiv](http://img.shields.io/badge/arXiv-1804.06406-B31B1B.svg)](https://arxiv.org/abs/1804.06406)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ejhigson/dns/blob/master/LICENSE)
 
-This repository contains the code used for making the results and plots in "nestcheck: diagnostic tests for nested sampling calculations" ([Higson et. al, 2018](https://arxiv.org/abs/1804.06406)). This provides examples of the use of the ``nestcheck`` package.
+This repository contains the code used for making the results and plots in "nestcheck: diagnostic tests for nested sampling calculations" ([Higson et. al, 2019](https://doi.org/10.1093/mnras/sty3090)). This provides examples of the use of the ``nestcheck`` package.
 
 If you have any questions then feel free to email <e.higson@mrao.cam.ac.uk>. However, note that this is research code and is not actively maintained.
 
