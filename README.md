@@ -5,7 +5,7 @@
 
 This repository contains the code used for making the results and plots in "nestcheck: diagnostic tests for nested sampling calculations" ([Higson et. al, 2018](https://arxiv.org/abs/1804.06406)). This provides examples of the use of the ``nestcheck`` package.
 
-If you have any questions then feel free to email <e.higson@mrao.cam.ac.uk>. However, note that is research code and is not actively maintained.
+If you have any questions then feel free to email <e.higson@mrao.cam.ac.uk>. However, note that this is research code and is not actively maintained.
 
 ### Requirements
 
